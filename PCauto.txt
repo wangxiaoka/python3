@@ -1,0 +1,11 @@
+ https://github.com/pywinauto/pywinauto
+https://ask.csdn.net/questions/675486?sort=id
+edit的文本不是标题，不能用GetWindowText，可以用getdlgitemtext或者sendmessage(wm_text)获取
+https://docs.microsoft.com/zh-cn/windows/desktop/api/winuser/nf-winuser-getdlgctrlid
+http://www.orangecube.net/articles/python-win32-example.html
+http://lixxu.iteye.com/blog/417218
+https://www.cnblogs.com/zoro-robin/p/5591185.html
+https://www.cnblogs.com/jiyirain/p/6526804.html
+https://blog.csdn.net/seele52/article/details/17618615 
+https://blog.csdn.net/qq_16234613/article/details/79155632   python win32api win32gui win32con 窗口句柄 发送消息 常用方法 键盘输入
+https://blog.csdn.net/luan_tianjiao/article/details/24650843  逐个获取文本框
