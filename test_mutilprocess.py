@@ -14,8 +14,7 @@ class winApp:
         wh = 100
         x = (sw - ww) / 2
         y = (sh - wh) / 2
-        self.__running_text = Event()
-        self.__running_text.set()
+        self.__running_text = True
         self.root.geometry("%dx%d+%d+%d" %(ww,wh,x,y))
 
         self.frm_text = Frame(self.root, width=10, height=10)
@@ -46,47 +45,57 @@ class winApp:
 
         if not self.process1.is_alive():
             self.process1.start()
+
             print(self.process1.pid)
         if not self.process2.is_alive():
             self.process2.start()
             print(self.process2.pid)
 
-        self.text_threading = threading.Thread(target=self.write_text)
+        # self.text_threading = threading.Thread(target=self.write_text)
+        # self.text_threading.start()
+        self.text_threading = myThread(self.write_text)
         self.text_threading.start()
+
         print("start!")
 
     def pause(self):
         self.process1.pause()
         self.process2.pause()
-        self.__running_text.clear()
+        self.text_threading.pause()
+        self.__running_text = False
         print("pause!")
 
     def resume(self):
-        self.__running_text.set()
+        self.__running_text = True
         self.process1.resume()
         self.process2.resume()
+        self.text_threading.resume()
         print("resume!")
 
     def stop(self):
         self.process1.stop()
         self.process2.stop()
-        self.__running_text.clear()
+        self.text_threading.stop()
+        self.__running_text = False
+        self.text.delete(0, END)
         print("stop!")
 
     def write_text(self):
-        while self.__running_text.wait():
+        while self.__running_text:
             if not self.queue.empty():
                 self.text.delete(0, END)
                 self.string = self.queue.get() + '+' +str(self.queue.qsize())
                 self.text.insert(0, self.string)
 
     def shutdown(self):
-        self.process1.stop()
-        self.process2.stop()
+        # self.process1.stop()
+        # self.process2.stop()
+        self.text_threading.stop()
         self.process1.terminate()
         self.process2.terminate()
         self.__running_text = False
         self.root.destroy()
+
 
 class myProcess(Process):
     def __init__(self, q, ProcessorID, name, delay):
@@ -125,6 +134,30 @@ def print_time(q, ProcessName, delay, counter):
     s = string + '++++' + str(q.qsize())
     print(s)
     return s
+
+class myThread(threading.Thread):
+    def __init__(self,callback):
+        super(myThread, self).__init__()
+        self.__flag = threading.Event()     # 用于暂停线程的标识
+        self.__flag.set()       # 设置为True
+        self.__running = threading.Event()      # 用于停止线程的标识
+        self.__running.set()      # 将running设置为True
+        self.cb = callback
+
+    def run(self):
+        while self.__running.isSet():
+            self.__flag.wait()      # 为True时立即返回, 为False时阻塞直到内部的标识位为True后返回
+            self.cb()
+
+    def pause(self):
+        self.__flag.clear()  # 设置为False, 让线程阻塞
+
+    def resume(self):
+        self.__flag.set()  # 设置为True, 让线程停止阻塞
+
+    def stop(self):
+        self.__flag.set()  # 将线程从暂停状态恢复, 如何已经暂停的话
+        self.__running.clear()  # 设置为False
 
 
 
